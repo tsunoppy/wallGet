@@ -154,25 +154,51 @@ class MyFrame(gui.MyFrame):
 
 
         readFile = self.text_ctrl_2.GetValue()
+
+        self.matplotlib_axes.clear()
+        self.matplotlib_axes2.clear()
+        self.matplotlib_axes3.clear()
+
         ax     = self.matplotlib_axes
         screen = self.matplotlib_canvas
-        ax.clear()
+        ax2     = self.matplotlib_axes2
+        screen2 = self.matplotlib_canvas2
+        ax3     = self.matplotlib_axes3
+        screen3 = self.matplotlib_canvas3
 
         #wall.rout_1().read_data()
         #wall.rout_1(readFile,ax,screen).solve()
 
-        dx,dy,px,py = wall.rout_1(readFile,ax,screen).solve()
+        obj = wall.rout_1(readFile,ax,screen,ax2,screen2,ax3,screen3)
+        obj.model()
+        obj.axay()
+        #obj.ecc()
+        dx,dy,px,py,dr,ex,ey = obj.solve2(0.0)
+#        obj.solve2(0.0)
+
+        gx,gy,req_aw = obj.grav()
+        gx = str( "{:.4f}".format(gx/1000) )
+        gy = str( "{:.4f}".format(gy/1000) )
+        req_aw = str( "{:.4e}".format( float(req_aw ) ) )
+
+        self.text_ctrl_gx.SetValue(gx)
+        self.text_ctrl_gy.SetValue(gy)
+        self.text_ctrl_reqaw.SetValue(req_aw)
+
+        """
 
         dx = str( "{:.4e}".format(dx) )
         dy = str( "{:.4e}".format(dy) )
         px = str( "{:.3f}".format(px/1000) )
         py = str( "{:.3f}".format(py/1000) )
+        dr = str( "{:.4e}".format(dr/10**9))
 
         self.text_ctrl_awx.SetValue(dx)
         self.text_ctrl_awy.SetValue(dy)
         self.text_ctrl_px.SetValue(px)
         self.text_ctrl_py.SetValue(py)
-
+        self.text_ctrl_dr.SetValue(dr)
+        """
 
 
     ########################################################################
@@ -180,14 +206,20 @@ class MyFrame(gui.MyFrame):
     def OnSave(self,id_cal):
         #readFile = self.text_ctrl_2.GetValue()
         out_dir = os.path.dirname(self.text_ctrl_2.GetValue())
-        self.matplotlib_figure.savefig(out_dir+"/wall.png")
+        self.matplotlib_figure.savefig(out_dir+"/model.png")
+        self.matplotlib_figure2.savefig(out_dir+"/area.png")
+        self.matplotlib_figure3.savefig(out_dir+"/ecc.png")
+
         print("save fig by",out_dir+"/wall.png")
+
+        """
         dlg = wx.MessageDialog(self, "save fig. by ",
                                out_dir+"/wall.png",
                                wx.OK | wx.ICON_ERROR
                                )
         dlg.ShowModal()
         dlg.Destroy()
+        """
 
     ########################################################################
     # test save fig
@@ -548,6 +580,11 @@ class MyApp(wx.App):
 # end of class MyApp
 
 if __name__ == "__main__":
+    # 高dpi対応
+    import ctypes
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except:
+        pass
     app = MyApp(0)
     app.MainLoop()
-
